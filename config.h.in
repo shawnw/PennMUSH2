@@ -1,0 +1,6 @@
+/* Configuration header for PennMUSH 2.0 */
+
+/* Boost dependencies */
+#undef HAVE_BOOST
+
+#undef HAVE_BOOST_ASIO

@@ -1,0 +1,14 @@
+AC_INIT(README, 0.01)
+AC_LANG(C++)
+
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile])
+
+AC_PROG_CXX([g++ clang++ c++])
+
+
+AX_BOOST_BASE()
+AX_BOOST_ASIO()
+
+
+AC_OUTPUT()

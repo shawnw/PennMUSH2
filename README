@@ -1,0 +1,5 @@
+PennMUSH 2.0.
+
+A hopefully mostly backwards compatible featurewise version of PennMUSH written in a more modern style fixing many problems with Penn 1.X. Plus Unicode!
+
+Requires the Boost libraries.
