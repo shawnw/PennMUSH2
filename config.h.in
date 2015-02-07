@@ -4,3 +4,7 @@
 #undef HAVE_BOOST
 
 #undef HAVE_BOOST_ASIO
+
+#undef HAVE_BOOST_LOCALE
+
+#undef HAVE_BOOST_REGEX

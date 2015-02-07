@@ -9,6 +9,7 @@ AC_PROG_CXX([g++ clang++ c++])
 
 AX_BOOST_BASE()
 AX_BOOST_ASIO()
-
+AX_BOOST_LOCALE()
+AX_BOOST_REGEX()
 
 AC_OUTPUT()
