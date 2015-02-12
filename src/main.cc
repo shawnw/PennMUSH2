@@ -3,8 +3,11 @@
 #include <fstream>
 #include <string>
 #include <cstdio>
+#include <cstring>
+#include <cerrno>
 #include <unistd.h>
 #include <boost/program_options.hpp>
+#include <boost/log/trivial.hpp>
 
 namespace po = boost::program_options;
 
@@ -15,6 +18,7 @@ int main(int argc, char **argv) {
   desc.add_options()
     ("help", "display options.")
     ("pid-file", po::value<std::string>(), "name of file to record pid")
+    ("no-session", "disable session management")
     ("config-file", po::value<std::string>(), "name of config file");
 
   po::positional_options_description p;
@@ -31,12 +35,26 @@ int main(int argc, char **argv) {
   }
 
   if (!vm.count("config-file")) {
-    std::cerr << "No configuration file specified on command line!\n";
+    BOOST_LOG_TRIVIAL(fatal) << "No configuration file specified on command line!";
     return 1;
+  }
+
+  if (!vm.count("no-session")) {
+    pid_t child = fork();
+    if (child > 0)
+      return 0;
+    else if (child == 0) {
+      if (setsid() < 0) 
+	BOOST_LOG_TRIVIAL(warning) << "setsid failed: " << std::strerror(errno);
+      else
+	BOOST_LOG_TRIVIAL(debug) << "Process id " << getpid() << " and session id " << getsid(getpid());
+    } else 
+      BOOST_LOG_TRIVIAL(warning) << "initial fork failed: " << std::strerror(errno);
   }
   
   if (vm.count("pid-file")) {
     pidfilename = vm["pid-file"].as<std::string>();
+    BOOST_LOG_TRIVIAL(info) << "Writing pid to " << pidfilename;
     std::ofstream pidfile(pidfilename.c_str());
     pidfile << getpid() << '\n';
   }
@@ -45,5 +63,8 @@ int main(int argc, char **argv) {
   
   if (!pidfilename.empty())
     std::remove(pidfilename.c_str());
+
+  BOOT_LOG_TRIVIAL(info) << "netmush exiting";
+  
   return 0;
 }

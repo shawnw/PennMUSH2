@@ -11,9 +11,11 @@
 
 #undef HAVE_BOOST_PROGRAM_OPTIONS
 
+#undef HAVE_BOOST_LOG
+
 #if !(defined(HAVE_BOOST) && defined(HAVE_BOOST_ASIO) && \
       defined(HAVE_BOOST_LOCALE) && defined(HAVE_BOOST_REGEX) && \
-      defined(HAVE_BOOST_PROGRAM_OPTIONS))
+      defined(HAVE_BOOST_PROGRAM_OPTIONS) && defined(HAVE_BOOST_LOG))
 #error "A required Boost library is not present."
 #endif
 
