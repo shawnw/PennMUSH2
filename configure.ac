@@ -7,7 +7,7 @@ AC_CONFIG_FILES([./src/Makefile])
 AC_PROG_CXX([g++ clang++ c++])
 
 AX_CXX_COMPILE_STDCXX_11(,mandatory)
-
+AX_GCC_ARCHFLAG(no, [CXXFLAGS="$CXXFLAGS $ax_cv_gcc_archflag"],[])
 
 AX_BOOST_BASE()
 AX_BOOST_ASIO()
