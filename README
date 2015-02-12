@@ -1,5 +1,12 @@
 PennMUSH 2.0.
 
-A hopefully mostly backwards compatible featurewise version of PennMUSH written in a more modern style fixing many problems with Penn 1.X. Plus Unicode!
+A hopefully mostly backwards compatible featurewise version of
+PennMUSH written in a more modern style fixing many problems with Penn
+1.X. Plus Unicode!
 
-Requires the Boost libraries.
+Requires the Boost libraries. Some package mangers/OSes include all
+component libraries of Boost in one blob, others split them up. Penn 2
+uses: ASIO, Locale, Regex, Program_Options, Log, Thread.
+
+It also requires a C++ compiler that supports C++11, and a standard
+POSIX environment. Windows is probably not suitable.

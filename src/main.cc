@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   if (!pidfilename.empty())
     std::remove(pidfilename.c_str());
 
-  BOOT_LOG_TRIVIAL(info) << "netmush exiting";
+  BOOST_LOG_TRIVIAL(info) << "netmush exiting";
   
   return 0;
 }
