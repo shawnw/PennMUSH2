@@ -9,9 +9,11 @@
 
 #undef HAVE_BOOST_REGEX
 
+#undef HAVE_BOOST_PROGRAM_OPTIONS
 
 #if !(defined(HAVE_BOOST) && defined(HAVE_BOOST_ASIO) && \
-      defined(HAVE_BOOST_LOCALE) && defined(HAVE_BOOST_REGEX))
+      defined(HAVE_BOOST_LOCALE) && defined(HAVE_BOOST_REGEX) && \
+      defined(HAVE_BOOST_PROGRAM_OPTIONS))
 #error "A required Boost library is not present."
 #endif
 
