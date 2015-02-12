@@ -8,8 +8,11 @@
 #include <unistd.h>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/locale.hpp>
 
 namespace po = boost::program_options;
+
+using namespace boost::locale;
 
 int main(int argc, char **argv) {
   std::string pidfilename;
@@ -59,7 +62,26 @@ int main(int argc, char **argv) {
     pidfile << getpid() << '\n';
   }
 
+  generator gen;
+  gen.add_messages_path("./translations/");
+  gen.add_messages_domain("PennMUSH2");
+
+  // Locale should be a utf-8 one.
+  std::locale::global(gen(""));
+  std::cout.imbue(std::locale());
+  std::cerr.imbue(std::locale());
+
   std::cout << "Config file is: " << vm["config-file"].as<std::string>() << '\n';
+  // READ CONFIG FILE
+
+  // READ DATABASE, SETUP GAME WORLD
+
+  // SETUP NETWORKING
+  
+  // ENTER MAIN LOOP
+
+
+  // SAVE DATABASE, OTHER CLEANUP
   
   if (!pidfilename.empty())
     std::remove(pidfilename.c_str());
