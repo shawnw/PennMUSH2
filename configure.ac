@@ -6,6 +6,8 @@ AC_CONFIG_FILES([./src/Makefile])
 
 AC_PROG_CXX([g++ clang++ c++])
 
+AX_CXX_COMPILE_STDCXX_11(,mandatory)
+
 
 AX_BOOST_BASE()
 AX_BOOST_ASIO()
