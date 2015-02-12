@@ -1,0 +1,18 @@
+/* Configuration header for PennMUSH 2.0 */
+
+/* Boost dependencies */
+#undef HAVE_BOOST
+
+#undef HAVE_BOOST_ASIO
+
+#undef HAVE_BOOST_LOCALE
+
+#undef HAVE_BOOST_REGEX
+
+
+#if !(defined(HAVE_BOOST) && defined(HAVE_BOOST_ASIO) && \
+      defined(HAVE_BOOST_LOCALE) && defined(HAVE_BOOST_REGEX))
+#error "A required Boost library is not present."
+#endif
+
+
