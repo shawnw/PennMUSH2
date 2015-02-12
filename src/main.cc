@@ -29,9 +29,15 @@ int main(int argc, char **argv) {
     std::cout << desc << '\n';
     return 0;
   }
+
+  if (!vm.count("config-file")) {
+    std::cerr << "No configuration file specified on command line!\n";
+    return 1;
+  }
+  
   if (vm.count("pid-file")) {
     pidfilename = vm["pid-file"].as<std::string>();
-    std::ofstream pidfile(pidfilename.c_str(), std::ofstream::out);
+    std::ofstream pidfile(pidfilename.c_str());
     pidfile << getpid() << '\n';
   }
 
