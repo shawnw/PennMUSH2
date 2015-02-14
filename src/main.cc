@@ -9,10 +9,15 @@
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/locale.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/info_parser.hpp>
 
 namespace po = boost::program_options;
 
 using namespace boost::locale;
+
+generator gen;
+boost::property_tree::ptree config;
 
 int main(int argc, char **argv) {
   std::string pidfilename;
@@ -37,11 +42,17 @@ int main(int argc, char **argv) {
     return 0;
   }
 
+  // READ CONFIG FILE
   if (!vm.count("config-file")) {
     BOOST_LOG_TRIVIAL(fatal) << "No configuration file specified on command line!";
     return 1;
+  } else {
+    std::string cfile = vm["config-file"].as<std::string>();
+    BOOST_LOG_TRIVIAL(trace) << "Config file is " << cfile;
+    boost::property_tree::read_info(vm["config-file"].as<std::string>(), config);
   }
 
+  // Session management to detatch from a console.
   if (!vm.count("no-session")) {
     pid_t child = fork();
     if (child > 0)
@@ -50,29 +61,35 @@ int main(int argc, char **argv) {
       if (setsid() < 0) 
 	BOOST_LOG_TRIVIAL(warning) << "setsid failed: " << std::strerror(errno);
       else
-	BOOST_LOG_TRIVIAL(debug) << "Process id " << getpid() << " and session id " << getsid(getpid());
+	BOOST_LOG_TRIVIAL(trace) << "Process id " << getpid() << " and session id " << getsid(getpid());
     } else 
       BOOST_LOG_TRIVIAL(warning) << "initial fork failed: " << std::strerror(errno);
   }
   
   if (vm.count("pid-file")) {
     pidfilename = vm["pid-file"].as<std::string>();
-    BOOST_LOG_TRIVIAL(info) << "Writing pid to " << pidfilename;
+    BOOST_LOG_TRIVIAL(trace) << "Writing pid to " << pidfilename;
     std::ofstream pidfile(pidfilename.c_str());
     pidfile << getpid() << '\n';
   }
 
-  generator gen;
-  gen.add_messages_path("./translations/");
-  gen.add_messages_domain("PennMUSH2");
+  // GET THIS PATH AND LOCALE FROM CONFIG
+  {
+    std::string translation_root = config.get("language.translation_root", "./translations/");
+    BOOST_LOG_TRIVIAL(trace) << "Using " << translation_root << " for translation lookup.";
+    gen.add_messages_path(translation_root);
+    gen.add_messages_domain("PennMUSH2");
+  }
 
-  // Locale should be a utf-8 one.
-  std::locale::global(gen(""));
-  std::cout.imbue(std::locale());
-  std::cerr.imbue(std::locale());
-
-  std::cout << "Config file is: " << vm["config-file"].as<std::string>() << '\n';
-  // READ CONFIG FILE
+  try {
+    // Locale should be a utf-8 one.
+    std::locale::global(gen(config.get("language.locale", "en_US.utf8")));
+    std::cout.imbue(std::locale());
+    std::cerr.imbue(std::locale());
+  } catch (conv::invalid_charset_error &e) {
+    BOOST_LOG_TRIVIAL(fatal) << "Unable to set locale: " << e.what();
+    return 1;
+  }
 
   // READ DATABASE, SETUP GAME WORLD
 
@@ -87,6 +104,7 @@ int main(int argc, char **argv) {
     std::remove(pidfilename.c_str());
 
   BOOST_LOG_TRIVIAL(info) << "netmush exiting";
+  std::cout << std::endl;
   
   return 0;
 }

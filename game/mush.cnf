@@ -1,0 +1,4 @@
+language {
+	 translation_root "./trans/"
+	 locale "en_US.utf8"
+}
