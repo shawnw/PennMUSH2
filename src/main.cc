@@ -5,7 +5,13 @@
 #include <cstdio>
 #include <cstring>
 #include <cerrno>
+#include <ctime>
+#include <cstdint>
+#include <random>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/locale.hpp>
@@ -18,6 +24,8 @@ using namespace boost::locale;
 
 generator gen;
 boost::property_tree::ptree config;
+
+std::mt19937 rand_gen;
 
 int main(int argc, char **argv) {
   std::string pidfilename;
@@ -49,7 +57,7 @@ int main(int argc, char **argv) {
   } else {
     std::string cfile = vm["config-file"].as<std::string>();
     BOOST_LOG_TRIVIAL(trace) << "Config file is " << cfile;
-    boost::property_tree::read_info(vm["config-file"].as<std::string>(), config);
+    boost::property_tree::read_info(cfile, config);
   }
 
   // Session management to detatch from a console.
@@ -73,24 +81,44 @@ int main(int argc, char **argv) {
     pidfile << getpid() << '\n';
   }
 
-  // GET THIS PATH AND LOCALE FROM CONFIG
-  {
-    std::string translation_root = config.get("language.translation_root", "./translations/");
-    BOOST_LOG_TRIVIAL(trace) << "Using " << translation_root << " for translation lookup.";
-    gen.add_messages_path(translation_root);
-    gen.add_messages_domain("PennMUSH2");
-  }
-
+  // SET TRANSLATION PATH AND LOCALE FROM CONFIG
   try {
     // Locale should be a utf-8 one.
     std::locale::global(gen(config.get("language.locale", "en_US.utf8")));
     std::cout.imbue(std::locale());
     std::cerr.imbue(std::locale());
+    std::string translation_root = config.get("language.translation_root", "./translations/");
+    BOOST_LOG_TRIVIAL(trace) << "Using " << translation_root << " for translation lookup.";
+    gen.add_messages_path(translation_root);
+    gen.add_messages_domain("PennMUSH2");
   } catch (conv::invalid_charset_error &e) {
     BOOST_LOG_TRIVIAL(fatal) << "Unable to set locale: " << e.what();
     return 1;
   }
 
+  // SEED RNG
+  {
+    struct stat urnd;
+    std::uint32_t seedval = getpid() + (time(nullptr) << 16);
+    BOOST_LOG_TRIVIAL(trace) << "Seeding RNG";
+    if (stat("/dev/urandom", &urnd) >= 0) {
+      if (S_ISCHR(urnd.st_mode)) {
+	int fd = open("/dev/urandom", O_RDONLY);
+	if (fd >= 0) {
+	  read(fd, &seedval, sizeof seedval);
+	  close(fd);
+	} else {
+	  BOOST_LOG_TRIVIAL(warning) << "Unable to open /dev/urandom: " << std::strerror(errno);
+	}
+     } else {
+	BOOST_LOG_TRIVIAL(debug) << "/dev/urandom not a device file";
+      }
+    } else {
+      BOOST_LOG_TRIVIAL(debug) << "/dev/urandom not found.";
+    }
+    rand_gen.seed(seedval);
+  }
+  
   // READ DATABASE, SETUP GAME WORLD
 
   // SETUP NETWORKING
@@ -104,7 +132,6 @@ int main(int argc, char **argv) {
     std::remove(pidfilename.c_str());
 
   BOOST_LOG_TRIVIAL(info) << "netmush exiting";
-  std::cout << std::endl;
   
   return 0;
 }
