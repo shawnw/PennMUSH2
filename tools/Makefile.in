@@ -1,0 +1,15 @@
+CXX=@CXX@
+CPPFLAGS=@CPPFLAGS@ @BOOST_CPPFLAGS@
+CXXFLAGS=@CXXFLAGS@
+LDFLAGS=@LDFLAGS@ @BOOST_LDFLAGS@
+LIBS=@LIBS@ @BOOST_PROGRAM_OPTIONS_LIB@
+
+all: pconv
+
+pconv: pconv.o
+	$(CXX) -o pconv $(CPPFLAGS) $(LDFLAGS) pconv.o $(LIBS)
+	strip pconv
+
+
+clean:
+	rm -f pconv *.o

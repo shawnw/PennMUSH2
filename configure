@@ -1939,7 +1939,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 ac_config_headers="$ac_config_headers ./src/config.h"
 
-ac_config_files="$ac_config_files ./src/Makefile"
+ac_config_files="$ac_config_files ./src/Makefile ./tools/Makefile"
 
 
 ac_ext=cpp
@@ -6200,6 +6200,7 @@ do
   case $ac_config_target in
     "./src/config.h") CONFIG_HEADERS="$CONFIG_HEADERS ./src/config.h" ;;
     "./src/Makefile") CONFIG_FILES="$CONFIG_FILES ./src/Makefile" ;;
+    "./tools/Makefile") CONFIG_FILES="$CONFIG_FILES ./tools/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
