@@ -8,10 +8,7 @@
 #include <ctime>
 #include <cstdint>
 #include <random>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/locale.hpp>
@@ -38,6 +35,8 @@ int main(int argc, char **argv) {
     ("config-file", po::value<std::string>(), "name of config file");
 
   po::positional_options_description p;
+
+
   p.add("config-file", -1);
   
   po::variables_map vm;
@@ -96,27 +95,10 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // SEED RNG
   {
-    struct stat urnd;
-    std::uint32_t seedval = getpid() + (time(nullptr) << 16);
+    std::random_device rd;
     BOOST_LOG_TRIVIAL(trace) << "Seeding RNG";
-    if (stat("/dev/urandom", &urnd) >= 0) {
-      if (S_ISCHR(urnd.st_mode)) {
-	int fd = open("/dev/urandom", O_RDONLY);
-	if (fd >= 0) {
-	  read(fd, &seedval, sizeof seedval);
-	  close(fd);
-	} else {
-	  BOOST_LOG_TRIVIAL(warning) << "Unable to open /dev/urandom: " << std::strerror(errno);
-	}
-     } else {
-	BOOST_LOG_TRIVIAL(debug) << "/dev/urandom not a device file";
-      }
-    } else {
-      BOOST_LOG_TRIVIAL(debug) << "/dev/urandom not found.";
-    }
-    rand_gen.seed(seedval);
+    rand_gen.seed(rd());
   }
   
   // READ DATABASE, SETUP GAME WORLD
