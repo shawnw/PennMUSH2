@@ -39,14 +39,8 @@ sys_setsid(void) {
     return p;
 }
 
-/*
-pid_t
-sys_getsid(pid_t p) {
- pid_t s = getsid(p);
- if (s < 0)
-    throw errno_exception("getsid");
-  else
-    return s;
+void
+sys_seteuid(uid_t id) {
+  if (seteuid(id) < 0)
+    throw errno_exception("seteuid");
 }
-*/
-

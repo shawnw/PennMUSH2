@@ -28,9 +28,29 @@ boost::property_tree::ptree config;
 
 std::mt19937 rand_gen;
 
+// When running suide root, only use root privleges for binding
+// sockets to allow ports < 1024. Otherwise run as normal user.
+bool in_suid_root_mode = false;
+
 int main(int argc, char **argv) {
   std::string pidfilename;
-  
+
+  /* Check to make sure we're not running as root. */
+  if (getuid() == 0) {
+    BOOST_LOG_TRIVIAL(fatal) << "PennMUSH will not run as root as a security measure. Please run the server as a different user.";
+    return 1;
+  }
+  if (geteuid() == 0) {
+    try {
+      sys_seteuid(getuid());
+      in_suid_root_mode = true;
+      BOOST_LOG_TRIVIAL(info) << "Running in suid-root mode. Dropping root privileges.";
+    } catch (errno_exception &e) {
+      BOOST_LOG_TRIVIAL(fatal) << "Unable to drop root privileges: " << e.what();
+      return 1;
+    }
+  }
+    
   po::options_description desc("Available options");
   desc.add_options()
     ("help", "display options.")

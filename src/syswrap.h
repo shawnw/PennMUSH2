@@ -22,7 +22,7 @@ class errno_exception : public std::runtime_error {
   int errcode(void) { return errno_; } 
 };
 
-/* RAII wrapper for open(2). Automatically closes the fd when it goes out of scope. */
+/* RAII wrapper for open(2). Automatically closes the fd when it goes out of scope. Movable, not copyable. */
 class sys_open {
 private:
   int fd_;
@@ -46,4 +46,5 @@ public:
 
 pid_t sys_fork(void);
 pid_t sys_setsid(void);
-//pid_t sys_getsid(pid_t);
+void sys_seteuid(uid_t);
+
