@@ -10,10 +10,14 @@
 #include <random>
 #include <unistd.h>
 #include <boost/program_options.hpp>
+#include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 #include <boost/locale.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
+
+#include "syswrap.h"
 
 namespace po = boost::program_options;
 
@@ -36,7 +40,6 @@ int main(int argc, char **argv) {
 
   po::positional_options_description p;
 
-
   p.add("config-file", -1);
   
   po::variables_map vm;
@@ -55,22 +58,48 @@ int main(int argc, char **argv) {
     return 1;
   } else {
     std::string cfile = vm["config-file"].as<std::string>();
-    BOOST_LOG_TRIVIAL(trace) << "Config file is " << cfile;
+    BOOST_LOG_TRIVIAL(info) << "Reading config file '" << cfile << '\'';
     boost::property_tree::read_info(cfile, config);
   }
 
+  // Set up log filters
+  {
+    namespace logging =  boost::log;
+    std::string level = config.get("logging.minimum_level", "debug");
+    int lev;
+    if (level == "trace")
+      lev = logging::trivial::trace;
+    else if (level == "debug")
+      lev = logging::trivial::debug;
+    else if (level == "info")
+      lev = logging::trivial::info;
+    else if (level == "warning")
+      lev = logging::trivial::warning;
+    else if (level == "fatal")
+      lev = logging::trivial::fatal;
+    else {
+      BOOST_LOG_TRIVIAL(fatal) << "Unknown logging level '" << level << "' specified.";
+      return 1;
+    }
+    logging::core::get()->set_filter(logging::trivial::severity >= lev);
+  }
+  
   // Session management to detatch from a console.
   if (!vm.count("no-session")) {
-    pid_t child = fork();
-    if (child > 0)
-      return 0;
-    else if (child == 0) {
-      if (setsid() < 0) 
-	BOOST_LOG_TRIVIAL(warning) << "setsid failed: " << std::strerror(errno);
+    try {
+      pid_t child = sys_fork();
+      if (child == 0) {
+	pid_t session = sys_setsid();
+	BOOST_LOG_TRIVIAL(trace) << "Process id " << getpid() << " and session id " << session;
+      } else {
+	return 0;
+      }
+    } catch (errno_exception &e) {
+      if (e.funcname() == "fork")
+	BOOST_LOG_TRIVIAL(warning) << e.what();
       else
-	BOOST_LOG_TRIVIAL(trace) << "Process id " << getpid() << " and session id " << getsid(getpid());
-    } else 
-      BOOST_LOG_TRIVIAL(warning) << "initial fork failed: " << std::strerror(errno);
+	BOOST_LOG_TRIVIAL(debug) << e.what();
+    }
   }
   
   if (vm.count("pid-file")) {
