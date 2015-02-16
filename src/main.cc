@@ -79,9 +79,15 @@ int main(int argc, char **argv) {
   } else {
     std::string cfile = vm["config-file"].as<std::string>();
     BOOST_LOG_TRIVIAL(info) << "Reading config file '" << cfile << '\'';
-    boost::property_tree::read_info(cfile, config);
+    try {
+      boost::property_tree::read_info(cfile, config);
+    } catch (boost::property_tree::ptree_error &e) {
+      BOOST_LOG_TRIVIAL(fatal) << "Unable to read config file: " << e.what();
+      return 1;
+    }
   }
-
+  
+  
   // Set up log filters
   {
     namespace logging =  boost::log;
