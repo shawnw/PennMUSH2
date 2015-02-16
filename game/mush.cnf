@@ -1,5 +1,14 @@
 mushname "PennMUSH"
+
+ ; Internationalization and translation options
 language {
 	 translation_root "./trans/"
 	 locale "en_US.utf8"
+}
+
+ ; Log related options.
+logging {
+	; From lowest to highest priority (And inverse verbosity), level can be one of trace, debug, info, warning, fatal.
+	; Most users should be good with info.
+	minimum_level "trace"
 }
