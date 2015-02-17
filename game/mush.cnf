@@ -11,6 +11,11 @@ logging {
 	; From lowest to highest priority (And inverse verbosity), level can be one of trace, debug, info, warning, fatal.
 	; Most users should be good with info.
 	minimum_level "trace"
-        ; File to log to.
-	file_name "netmush.log"
+        ; File to log to. If it contains '%', enable log rotation.
+	; See http://www.boost.org/doc/libs/1_57_0/libs/log/doc/html/log/detailed/sink_backends.html for format details.
+	file_name "netmush_%N.log"
+	; Log rotation related settings.
+	old_files_dir "./logs/" ; Directory to store log files.
+	rotate_size 64 ; Max kilobytes before a log file rotates.
+	max_log_size 10 ; Max megabytes for all log files.
 }

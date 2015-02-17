@@ -10,6 +10,7 @@
 #include <random>
 #include <unistd.h>
 #include <boost/program_options.hpp>
+
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -18,10 +19,13 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/support/date_time.hpp>
+
 #include <boost/locale.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/optional.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 #include "syswrap.h"
 
@@ -97,7 +101,9 @@ int main(int argc, char **argv) {
   {
     namespace logging =  boost::log;
     namespace keywords = boost::log::keywords;
-    
+    namespace sinks = boost::log::sinks;
+    namespace expr = boost::log::expressions;
+
     std::string level = config.get("logging.minimum_level", "debug");
     int lev;
     if (level == "trace")
@@ -120,10 +126,30 @@ int main(int argc, char **argv) {
     if (logfname)  {
       logging::add_common_attributes();
       logging::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
-      logging::add_file_log(
-			    keywords::file_name = *logfname,
-			    keywords::format = "[%TimeStamp%]: (%Severity%) %Message%"
-			    );
+      
+      if (logfname->find("%") != std::string::npos) {
+	// Complicated log rotation.
+	typedef sinks::synchronous_sink< sinks::text_file_backend > file_sink;
+	int rotate_size = config.get<int>("logging.rotate_size", 256) * 1024;
+	boost::shared_ptr<file_sink> sink(new file_sink(
+				       keywords::file_name = *logfname,
+				       keywords::rotation_size = rotate_size));
+	auto lfdir = config.get_optional<std::string>("logging.old_files_dir");
+	if (lfdir) {
+	  int max_log_size = config.get<int>("logging.max_log_size", 10) * 1024 * 1024;
+	  sink->locked_backend()->set_file_collector(sinks::file::make_collector(
+										 keywords::target = *lfdir,
+										 keywords::max_size = max_log_size));
+	  sink->locked_backend()->scan_for_files();
+	}
+	sink->set_formatter(expr::stream << '[' << expr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")
+			    << "] (" << logging::trivial::severity << ") " << expr::smessage);
+	logging::core::get()->add_sink(sink);
+      } else {
+	// Simple, single file logging
+	logging::add_file_log(keywords::file_name = *logfname,
+			      				       keywords::format = "[%TimeStamp%]: (%Severity%) %Message%");
+      }
     }
   }
   
