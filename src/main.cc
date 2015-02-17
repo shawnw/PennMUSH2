@@ -87,7 +87,6 @@ int main(int argc, char **argv) {
     }
   }
   
-  
   // Set up log filters
   {
     namespace logging =  boost::log;
@@ -131,7 +130,7 @@ int main(int argc, char **argv) {
   if (vm.count("pid-file")) {
     pidfilename = vm["pid-file"].as<std::string>();
     BOOST_LOG_TRIVIAL(trace) << "Writing pid to " << pidfilename;
-    std::ofstream pidfile(pidfilename.c_str());
+    std::ofstream pidfile(pidfilename);
     pidfile << getpid() << '\n';
   }
 
