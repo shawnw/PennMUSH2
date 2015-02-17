@@ -585,6 +585,7 @@ PACKAGE_URL=''
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 BOOST_THREAD_LIB
+BOOST_LOG_SETUP_LIB
 BOOST_LOG_LIB
 BOOST_PROGRAM_OPTIONS_LIB
 BOOST_REGEX_LIB
@@ -662,6 +663,7 @@ with_boost_locale
 with_boost_regex
 with_boost_program_options
 with_boost_log
+with_boost_log_setup
 with_boost_thread
 '
       ac_precious_vars='build_alias
@@ -1319,6 +1321,10 @@ Optional Packages:
                           use the Log library from boost - it is possible to
                           specify a certain library for the linker e.g.
                           --with-boost-log=boost_log-gcc-mt
+  --with-boost-log_setup[=special-lib]
+                          use the Log_setup library from boost - it is
+                          possible to specify a certain library for the linker
+                          e.g. --with-boost-log_setup=boost_log_setup-gcc-mt
   --with-boost-thread[=special-lib]
                           use the Thread library from boost - it is possible
                           to specify a certain library for the linker e.g.
@@ -5231,6 +5237,209 @@ fi
 			if test "x$link_log" = "xno"; then
 				as_fn_error $? "Could not link against $ax_lib !" "$LINENO" 5
 			fi
+		fi
+
+		CPPFLAGS="$CPPFLAGS_SAVED"
+		LDFLAGS="$LDFLAGS_SAVED"
+	fi
+
+
+
+# Check whether --with-boost-log_setup was given.
+if test "${with_boost_log_setup+set}" = set; then :
+  withval=$with_boost_log_setup;
+        if test "$withval" = "no"; then
+	    want_boost="no"
+        elif test "$withval" = "yes"; then
+            want_boost="yes"
+            ax_boost_user_log_setup_lib=""
+        else
+	    want_boost="yes"
+	    ax_boost_user_log_setup_lib="$withval"
+	fi
+
+else
+  want_boost="yes"
+
+fi
+
+
+	if test "x$want_boost" = "xyes"; then
+
+
+
+
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
+
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
+
+
+
+
+$as_echo "#define HAVE_BOOST_LOG_SETUP /**/" >>confdefs.h
+
+
+		BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/[^\/]*//'`
+
+		if test "x$ax_boost_user_log_setup_lib" = "x"; then
+			for libextension in `ls $BOOSTLIBDIR/libboost_log_setup*.so* $BOOSTLIBDIR/libboost_log_setup*.dylib* $BOOSTLIBDIR/libboost_log_setup*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_log_setup.*\)\.so.*$;\1;' -e 's;^lib\(boost_log_setup.*\)\.dylib.*$;\1;' -e 's;^lib\(boost_log_setup.*\)\.a.*$;\1;'` ; do
+				ax_lib=${libextension}
+				as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
+$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  BOOST_LOG_SETUP_LIB="-l$ax_lib";  link_log_setup="yes"; break
+else
+  link_log_setup="no"
+fi
+
+			done
+
+			if test "x$link_log_setup" != "xyes"; then
+				for libextension in `ls $BOOSTLIBDIR/boost_log_setup*.dll* $BOOSTLIBDIR/boost_log_setup*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_log_setup.*\)\.dll.*$;\1;' -e 's;^\(boost_log_setup.*\)\.a.*$;\1;'` ; do
+					ax_lib=${libextension}
+					as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
+$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  BOOST_LOG_SETUP_LIB="-l$ax_lib";  link_log_setup="yes"; break
+else
+  link_log_setup="no"
+fi
+
+				done
+			fi
+
+		else
+			for ax_lib in $ax_boost_user_log_setup_lib boost_log_setup-$ax_boost_user_log_setup_lib; do
+				as_ac_Lib=`$as_echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exit in -l$ax_lib" >&5
+$as_echo_n "checking for exit in -l$ax_lib... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  BOOST_LOG_SETUP_LIB="-l$ax_lib";  link_log_setup="yes"; break
+else
+  link_log_setup="no"
+fi
+
+			done
+
+		fi
+
+		if test "x$ax_lib" = "x"; then
+			as_fn_error $? "Could not find a version of the library!" "$LINENO" 5
+		fi
+
+		if test "x$link_log_setup" = "xno"; then
+			as_fn_error $? "Could not link against $ax_lib !" "$LINENO" 5
 		fi
 
 		CPPFLAGS="$CPPFLAGS_SAVED"

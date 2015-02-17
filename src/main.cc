@@ -13,9 +13,15 @@
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 #include <boost/locale.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
+#include <boost/optional.hpp>
 
 #include "syswrap.h"
 
@@ -44,9 +50,9 @@ int main(int argc, char **argv) {
     try {
       sys_seteuid(getuid());
       in_suid_root_mode = true;
-      BOOST_LOG_TRIVIAL(info) << "Running in suid-root mode. Dropping root privileges.";
+      std::cout << "Running in suid-root mode. Dropping root privileges.\n";
     } catch (errno_exception &e) {
-      BOOST_LOG_TRIVIAL(fatal) << "Unable to drop root privileges: " << e.what();
+      std::cerr << "Unable to drop root privileges: " << e.what() << '\n';
       return 1;
     }
   }
@@ -74,22 +80,24 @@ int main(int argc, char **argv) {
 
   // READ CONFIG FILE
   if (!vm.count("config-file")) {
-    BOOST_LOG_TRIVIAL(fatal) << "No configuration file specified on command line!";
+    std::cerr << "No configuration file specified on command line!\n";
     return 1;
   } else {
     std::string cfile = vm["config-file"].as<std::string>();
-    BOOST_LOG_TRIVIAL(info) << "Reading config file '" << cfile << '\'';
+    std::cout << "Reading config file '" << cfile << "\'\n";
     try {
       boost::property_tree::read_info(cfile, config);
     } catch (boost::property_tree::ptree_error &e) {
-      BOOST_LOG_TRIVIAL(fatal) << "Unable to read config file: " << e.what();
+      std::cerr << "Unable to read config file: " << e.what() << '\n';
       return 1;
     }
   }
   
-  // Set up log filters
+  // Set up logging
   {
     namespace logging =  boost::log;
+    namespace keywords = boost::log::keywords;
+    
     std::string level = config.get("logging.minimum_level", "debug");
     int lev;
     if (level == "trace")
@@ -103,10 +111,20 @@ int main(int argc, char **argv) {
     else if (level == "fatal")
       lev = logging::trivial::fatal;
     else {
-      BOOST_LOG_TRIVIAL(fatal) << "Unknown logging level '" << level << "' specified.";
+      std::cerr << "Unknown logging level '" << level << "' specified.\n";
       return 1;
     }
     logging::core::get()->set_filter(logging::trivial::severity >= lev);
+
+    auto logfname = config.get_optional<std::string>("logging.file_name");
+    if (logfname)  {
+      logging::add_common_attributes();
+      logging::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
+      logging::add_file_log(
+			    keywords::file_name = *logfname,
+			    keywords::format = "[%TimeStamp%]: (%Severity%) %Message%"
+			    );
+    }
   }
   
   // Session management to detatch from a console.

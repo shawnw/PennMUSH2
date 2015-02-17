@@ -13,12 +13,14 @@
 
 #undef HAVE_BOOST_LOG
 
+#undef HAVE_BOOST_LOG_SETUP
+
 #undef HAVE_BOOST_THREAD
 
 #if !(defined(HAVE_BOOST) && defined(HAVE_BOOST_ASIO) && \
       defined(HAVE_BOOST_LOCALE) && defined(HAVE_BOOST_REGEX) && \
       defined(HAVE_BOOST_PROGRAM_OPTIONS) && defined(HAVE_BOOST_LOG)  && \
-      defined(HAVE_BOOST_THREAD))
+      defined(HAVE_BOOST_LOG_SETUP) && defined(HAVE_BOOST_THREAD))
 #error "A required Boost library is not present."
 #endif
 
