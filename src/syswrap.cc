@@ -7,13 +7,13 @@
 sys_open::sys_open(const char *path, int flags) {
   fd_ = open(path, flags);
   if (fd_ < 0)
-    throw errno_exception("open");
+    throw std::system_error(errno, std::system_category(), "open");
 }
 
 sys_open::sys_open(const char *path, int flags, mode_t mode) {
   fd_ = open(path, flags, mode);
   if (fd_ < 0)
-    throw errno_exception("open");
+    throw std::system_error(errno, std::system_category(), "open");
 }
 
 sys_open::~sys_open() {
@@ -25,7 +25,7 @@ pid_t
 sys_fork(void) {
   pid_t p = fork();
   if (p < 0)
-    throw errno_exception("fork");
+    throw std::system_error(errno, std::system_category(), "fork");
   else
     return p;
 }
@@ -34,7 +34,7 @@ pid_t
 sys_setsid(void) {
   pid_t p = setsid();
   if (p < 0)
-    throw errno_exception("setsid");
+    throw std::system_error(errno, std::system_category(), "setsid");
   else
     return p;
 }
@@ -42,5 +42,5 @@ sys_setsid(void) {
 void
 sys_seteuid(uid_t id) {
   if (seteuid(id) < 0)
-    throw errno_exception("seteuid");
+    throw std::system_error(errno, std::system_category(), "seteuid");
 }

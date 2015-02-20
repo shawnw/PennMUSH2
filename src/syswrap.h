@@ -1,26 +1,12 @@
 #include <stdexcept>
 #include <cerrno>
 #include <cstring>
+#include <system_error>
 #include <fcntl.h>
 #include <unistd.h>
 
-/* Exception class thrown by sys* versions of functions that would normally return -1 and set errno */
-class errno_exception : public std::runtime_error {
- private:
-  int errno_;
-  std::string func_;
-  std::string msg_;
- public:
- errno_exception(const char *f)
-   : errno_(errno), func_(f), std::runtime_error("") {
-    msg_ = func_ + ": " + std::strerror(errno_);
-  };
-  virtual const char *what(void) const noexcept {
-    return msg_.c_str();
-  }
-  const std::string& funcname(void) { return func_; }
-  int errcode(void) { return errno_; } 
-};
+/* Wrapper functions for syscalls, signalling errors via raising
+   std::system_error instead of returning -1 and setting errno */
 
 /* RAII wrapper for open(2). Automatically closes the fd when it goes out of scope. Movable, not copyable. */
 class sys_open {

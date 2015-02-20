@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
       sys_seteuid(getuid());
       in_suid_root_mode = true;
       std::cout << "Running in suid-root mode. Dropping root privileges.\n";
-    } catch (errno_exception &e) {
+    } catch (std::system_error &e) {
       std::cerr << "Unable to drop root privileges: " << e.what() << '\n';
       return 1;
     }
@@ -163,8 +163,8 @@ int main(int argc, char **argv) {
       } else {
 	return 0;
       }
-    } catch (errno_exception &e) {
-      if (e.funcname() == "fork")
+    } catch (std::system_error &e) {
+      if (std::string(e.what()).find("fork") != std::string::npos)
 	BOOST_LOG_TRIVIAL(warning) << e.what();
       else
 	BOOST_LOG_TRIVIAL(debug) << e.what();
