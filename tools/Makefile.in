@@ -4,12 +4,12 @@ CXXFLAGS=@CXXFLAGS@
 LDFLAGS=@LDFLAGS@ @BOOST_LDFLAGS@
 LIBS=@LIBS@ @BOOST_PROGRAM_OPTIONS_LIB@
 
-all: pconv
+all: ptconv
 
-pconv: pconv.o
-	$(CXX) -o pconv $(CPPFLAGS) $(LDFLAGS) pconv.o $(LIBS)
-	strip pconv
+ptconv: ptconv.o
+	$(CXX) -o ptconv $(CPPFLAGS) $(LDFLAGS) ptconv.o $(LIBS)
+	strip ptconv
 
 
 clean:
-	rm -f pconv *.o
+	rm -f ptconv *.o
